@@ -1,5 +1,5 @@
 ### Important note
-- I completely forgot to add the two commits. I only added 1 commit with the fully refactored code. But key points that i've refactored are mentioned below. REVIEW & THOUGHTS are given at the end. THANKS.
+- This is the 2nd repo, on the first repo i forgot to add the 2 commits. in this repo non-refactored code is added in first commit and refactored is added in 2nd commit. key points that i've refactored are mentioned below. REVIEW & THOUGHTS are given at the end. THANKS.
 
 ### Improvements in BookingController.php
 

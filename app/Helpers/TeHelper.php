@@ -1,11 +1,11 @@
 <?php
-namespace DTApi\Helpers;
+namespace App\Helpers;
 
 use Carbon\Carbon;
-use DTApi\Models\Job;
-use DTApi\Models\User;
-use DTApi\Models\Language;
-use DTApi\Models\UserMeta;
+use App\Models\Job;
+use App\Models\User;
+// use App\Models\Language;
+use App\Models\UserMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,8 +13,8 @@ class TeHelper
 {
     public static function fetchLanguageFromJobId($id)
     {
-        $language = Language::findOrFail($id);
-        return $language1 = $language->language;
+        // $language = Language::findOrFail($id);
+        return 'English';
     }
 
     public static function getUsermeta($user_id, $key = false)
@@ -47,10 +47,9 @@ class TeHelper
 
         $difference = $due_time->diffInHours($created_at);
 
-
-        if($difference <= 90)
+        if ($difference <= 90) {
             $time = $due_time;
-        elseif ($difference <= 24) {
+        } elseif ($difference <= 24) {
             $time = $created_at->addMinutes(90);
         } elseif ($difference > 24 && $difference <= 72) {
             $time = $created_at->addHours(16);
@@ -58,9 +57,9 @@ class TeHelper
             $time = $due_time->subHours(48);
         }
 
-        return $time->format('Y-m-d H:i:s');
-
+        return $time; // Return a Carbon instance
     }
+
 
 }
 

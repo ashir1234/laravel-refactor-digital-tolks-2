@@ -1,20 +1,16 @@
 <?php
 
-namespace DTApi\Http\Controllers;
+namespace App\Http\Controllers;
 
-use DTApi\Models\Job;
-use DTApi\Http\Requests;
-use DTApi\Models\Distance;
+use App\Models\Job;
 use Illuminate\Http\Request;
-use DTApi\Repository\BookingRepository;
-
+use App\Repository\BookingRepository;
 /**
  * Class BookingController
- * @package DTApi\Http\Controllers
+ * @package App\Http\Controllers
  */
 class BookingController extends Controller
 {
-
     /**
      * @var BookingRepository
      */
@@ -35,14 +31,12 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
-
+        if ($user_id = $request->get('user_id')) {
             $response = $this->repository->getUsersJobs($user_id);
-
-        }
-        elseif($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID'))
-        {
+        } elseif ($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID')) {
             $response = $this->repository->getAll($request);
+        } else {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         return response($response);
@@ -54,7 +48,8 @@ class BookingController extends Controller
      */
     public function show($id)
     {
-        $job = $this->repository->with('translatorJobRel.user')->find($id);
+        //instead of with()->find(), we can do findWith()
+        $job = $this->repository->findWith('translatorJobRel.user', $id);
 
         return response($job);
     }
@@ -66,11 +61,9 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-
         $response = $this->repository->store($request->__authenticatedUser, $data);
 
         return response($response);
-
     }
 
     /**
@@ -93,9 +86,8 @@ class BookingController extends Controller
      */
     public function immediateJobEmail(Request $request)
     {
-        $adminSenderEmail = config('app.adminemail');
+        //Removing adminSenderEmail as its useless
         $data = $request->all();
-
         $response = $this->repository->storeJobEmail($data);
 
         return response($response);
@@ -107,13 +99,12 @@ class BookingController extends Controller
      */
     public function getHistory(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
-
+        if ($user_id = $request->get('user_id')) {
             $response = $this->repository->getUsersJobsHistory($user_id, $request);
             return response($response);
         }
 
-        return null;
+        return response()->json(['error' => 'Invalid Request'], 400); //instead of returning null, returning a proper response
     }
 
     /**
@@ -184,7 +175,7 @@ class BookingController extends Controller
      */
     public function getPotentialJobs(Request $request)
     {
-        $data = $request->all();
+        //remove $data = $request->all(); its useless here
         $user = $request->__authenticatedUser;
 
         $response = $this->repository->getPotentialJobs($user);
@@ -195,29 +186,24 @@ class BookingController extends Controller
     public function distanceFeed(Request $request)
     {
         $data = $request->all();
+        $jobid = $data['jobid'] ?? null;
 
-        if (isset($data['distance']) && $data['distance'] != "") {
+        if (isset($data['distance']) && $data['distance'] !== "") {
             $distance = $data['distance'];
         } else {
-            $distance = "";
-        }
-        if (isset($data['time']) && $data['time'] != "") {
-            $time = $data['time'];
-        } else {
-            $time = "";
-        }
-        if (isset($data['jobid']) && $data['jobid'] != "") {
-            $jobid = $data['jobid'];
+            $distance = null;
         }
 
-        if (isset($data['session_time']) && $data['session_time'] != "") {
-            $session = $data['session_time'];
+        if (isset($data['time']) && $data['time'] !== "") {
+            $time = $data['time'];
         } else {
-            $session = "";
+            $time = null;
         }
 
         if ($data['flagged'] == 'true') {
-            if($data['admincomment'] == '') return "Please, add comment";
+            if (empty($data['admincomment'])) {
+                return response()->json(['error' => 'Please add a comment'], 400);
+            }
             $flagged = 'yes';
         } else {
             $flagged = 'no';
